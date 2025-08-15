@@ -26,6 +26,7 @@ export default function ItemsManager({ items, components, onAddItem, onEditItem,
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [selectedComponents, setSelectedComponents] = useState<string[]>([])
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const resetForm = () => {
     setFormData({ name: "", type: "standard", image: "", recipe: null })
@@ -35,6 +36,14 @@ export default function ItemsManager({ items, components, onAddItem, onEditItem,
     setIsAdding(false)
     setEditingItem(null)
   }
+
+  const sortedItems = items.sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return a.name.localeCompare(b.name)
+    } else {
+      return b.name.localeCompare(a.name)
+    }
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -263,7 +272,15 @@ export default function ItemsManager({ items, components, onAddItem, onEditItem,
 
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Existing Items</h3>
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-medium text-gray-900">Existing Items</h3>
+            <button
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Sort {sortOrder === 'asc' ? '↓' : '↑'} A-Z
+            </button>
+          </div>
         </div>
         
         <div className="divide-y divide-gray-200">
@@ -272,7 +289,7 @@ export default function ItemsManager({ items, components, onAddItem, onEditItem,
               No items created yet. Add your first item above.
             </div>
           ) : (
-            items.map(item => (
+            sortedItems.map(item => (
               <div key={item.id} className="px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   {item.image && (

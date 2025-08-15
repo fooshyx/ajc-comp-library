@@ -21,6 +21,7 @@ export default function UsersManager() {
     password: "",
     isAdmin: false
   })
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   useEffect(() => {
     fetchUsers()
@@ -39,6 +40,14 @@ export default function UsersManager() {
       setLoading(false)
     }
   }
+
+  const sortedUsers = users.sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return a.username.localeCompare(b.username)
+    } else {
+      return b.username.localeCompare(a.username)
+    }
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,12 +130,20 @@ export default function UsersManager() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">User Management</h2>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-        >
-          Add User
-        </button>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Sort {sortOrder === 'asc' ? '↓' : '↑'} A-Z
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+          >
+            Add User
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -229,7 +246,7 @@ export default function UsersManager() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {users.map((user) => (
+            {sortedUsers.map((user) => (
               <tr key={user.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {user.username}
