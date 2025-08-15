@@ -6,9 +6,9 @@ import { processComponentImage, validateImageFile } from "@/lib/imageUtils"
 
 interface ComponentsManagerProps {
   components: Component[]
-  onAddComponent: (component: Omit<Component, "id">) => void
-  onEditComponent: (component: Component) => void
-  onDeleteComponent: (id: string) => void
+  onAddComponent: (component: Omit<Component, "id">) => Promise<void>
+  onEditComponent: (component: Component) => Promise<void>
+  onDeleteComponent: (id: string) => Promise<void>
 }
 
 export default function ComponentsManager({ components, onAddComponent, onEditComponent, onDeleteComponent }: ComponentsManagerProps) {

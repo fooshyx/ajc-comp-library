@@ -7,9 +7,9 @@ import { processItemImage, validateImageFile } from "@/lib/imageUtils"
 interface ItemsManagerProps {
   items: Item[]
   components: Component[]
-  onAddItem: (item: Omit<Item, "id">) => void
-  onEditItem: (item: Item) => void
-  onDeleteItem: (id: string) => void
+  onAddItem: (item: Omit<Item, "id">) => Promise<void>
+  onEditItem: (item: Item) => Promise<void>
+  onDeleteItem: (id: string) => Promise<void>
 }
 
 const itemTypes: ItemType[] = ['standard', 'emblem', 'artifact', 'other']

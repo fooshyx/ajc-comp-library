@@ -7,9 +7,9 @@ import { processUnitImage, validateImageFile } from "@/lib/imageUtils"
 interface UnitsManagerProps {
   units: Unit[]
   traits: Trait[]
-  onAddUnit: (unit: Omit<Unit, "id">) => void
-  onEditUnit: (unit: Unit) => void
-  onDeleteUnit: (id: string) => void
+  onAddUnit: (unit: Omit<Unit, "id">) => Promise<void>
+  onEditUnit: (unit: Unit) => Promise<void>
+  onDeleteUnit: (id: string) => Promise<void>
 }
 
 export default function UnitsManager({ units, traits, onAddUnit, onEditUnit, onDeleteUnit }: UnitsManagerProps) {

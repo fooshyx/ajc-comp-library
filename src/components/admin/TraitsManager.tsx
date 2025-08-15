@@ -7,9 +7,9 @@ import { BREAKPOINT_COLORS, getBreakpointColorHex, getBreakpointColorName, getAl
 
 interface TraitsManagerProps {
   traits: Trait[]
-  onAddTrait: (trait: Omit<Trait, "id">) => void
-  onEditTrait: (trait: Trait) => void
-  onDeleteTrait: (id: string) => void
+  onAddTrait: (trait: Omit<Trait, "id">) => Promise<void>
+  onEditTrait: (trait: Trait) => Promise<void>
+  onDeleteTrait: (id: string) => Promise<void>
 }
 
 export default function TraitsManager({ traits, onAddTrait, onEditTrait, onDeleteTrait }: TraitsManagerProps) {

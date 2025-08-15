@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { Unit, Trait, Component, Item } from "@/types/tft"
-import { storageUtils } from "@/lib/storage"
 import UnitsManager from "@/components/admin/UnitsManager"
 import TraitsManager from "@/components/admin/TraitsManager"
 import ComponentsManager from "@/components/admin/ComponentsManager"
@@ -20,13 +19,27 @@ export default function AdminPage() {
   const [components, setComponents] = useState<Component[]>([])
   const [items, setItems] = useState<Item[]>([])
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setUnits(storageUtils.getUnits())
-      setTraits(storageUtils.getTraits())
-      setComponents(storageUtils.getComponents())
-      setItems(storageUtils.getItems())
+  // Fetch data from API
+  const fetchData = async () => {
+    try {
+      const [unitsRes, traitsRes, componentsRes, itemsRes] = await Promise.all([
+        fetch('/api/units'),
+        fetch('/api/traits'),
+        fetch('/api/components'),
+        fetch('/api/items')
+      ])
+
+      if (unitsRes.ok) setUnits(await unitsRes.json())
+      if (traitsRes.ok) setTraits(await traitsRes.json())
+      if (componentsRes.ok) setComponents(await componentsRes.json())
+      if (itemsRes.ok) setItems(await itemsRes.json())
+    } catch (error) {
+      console.error('Failed to fetch data:', error)
     }
+  }
+
+  useEffect(() => {
+    fetchData()
   }, [])
 
   if (status === "loading") {
@@ -37,104 +50,257 @@ export default function AdminPage() {
     redirect("/auth/signin")
   }
 
+  // Helper function to generate unique IDs
+  const generateId = (): string => {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2)
+  }
+
   // Trait handlers
-  const handleAddTrait = (traitData: Omit<Trait, "id">) => {
-    const newTrait: Trait = {
-      ...traitData,
-      id: storageUtils.generateId()
+  const handleAddTrait = async (traitData: Omit<Trait, "id">) => {
+    try {
+      const newTrait: Trait = {
+        ...traitData,
+        id: generateId()
+      }
+      
+      const response = await fetch('/api/traits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTrait)
+      })
+      
+      if (response.ok) {
+        const createdTrait = await response.json()
+        setTraits(prev => [...prev, createdTrait])
+      } else {
+        console.error('Failed to create trait')
+      }
+    } catch (error) {
+      console.error('Error creating trait:', error)
     }
-    const updatedTraits = [...traits, newTrait]
-    setTraits(updatedTraits)
-    storageUtils.saveTraits(updatedTraits)
   }
 
-  const handleEditTrait = (updatedTrait: Trait) => {
-    const updatedTraits = traits.map(trait => 
-      trait.id === updatedTrait.id ? updatedTrait : trait
-    )
-    setTraits(updatedTraits)
-    storageUtils.saveTraits(updatedTraits)
+  const handleEditTrait = async (updatedTrait: Trait) => {
+    try {
+      const response = await fetch('/api/traits', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTrait)
+      })
+      
+      if (response.ok) {
+        const savedTrait = await response.json()
+        setTraits(prev => prev.map(trait => 
+          trait.id === savedTrait.id ? savedTrait : trait
+        ))
+      } else {
+        console.error('Failed to update trait')
+      }
+    } catch (error) {
+      console.error('Error updating trait:', error)
+    }
   }
 
-  const handleDeleteTrait = (id: string) => {
-    const updatedTraits = traits.filter(trait => trait.id !== id)
-    setTraits(updatedTraits)
-    storageUtils.saveTraits(updatedTraits)
+  const handleDeleteTrait = async (id: string) => {
+    try {
+      const response = await fetch(`/api/traits?id=${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        setTraits(prev => prev.filter(trait => trait.id !== id))
+      } else {
+        console.error('Failed to delete trait')
+      }
+    } catch (error) {
+      console.error('Error deleting trait:', error)
+    }
   }
 
   // Unit handlers
-  const handleAddUnit = (unitData: Omit<Unit, "id">) => {
-    const newUnit: Unit = {
-      ...unitData,
-      id: storageUtils.generateId()
+  const handleAddUnit = async (unitData: Omit<Unit, "id">) => {
+    try {
+      const newUnit: Unit = {
+        ...unitData,
+        id: generateId()
+      }
+      
+      const response = await fetch('/api/units', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUnit)
+      })
+      
+      if (response.ok) {
+        const createdUnit = await response.json()
+        setUnits(prev => [...prev, createdUnit])
+      } else {
+        console.error('Failed to create unit')
+      }
+    } catch (error) {
+      console.error('Error creating unit:', error)
     }
-    const updatedUnits = [...units, newUnit]
-    setUnits(updatedUnits)
-    storageUtils.saveUnits(updatedUnits)
   }
 
-  const handleEditUnit = (updatedUnit: Unit) => {
-    const updatedUnits = units.map(unit => 
-      unit.id === updatedUnit.id ? updatedUnit : unit
-    )
-    setUnits(updatedUnits)
-    storageUtils.saveUnits(updatedUnits)
+  const handleEditUnit = async (updatedUnit: Unit) => {
+    try {
+      const response = await fetch('/api/units', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedUnit)
+      })
+      
+      if (response.ok) {
+        const savedUnit = await response.json()
+        setUnits(prev => prev.map(unit => 
+          unit.id === savedUnit.id ? savedUnit : unit
+        ))
+      } else {
+        console.error('Failed to update unit')
+      }
+    } catch (error) {
+      console.error('Error updating unit:', error)
+    }
   }
 
-  const handleDeleteUnit = (id: string) => {
-    const updatedUnits = units.filter(unit => unit.id !== id)
-    setUnits(updatedUnits)
-    storageUtils.saveUnits(updatedUnits)
+  const handleDeleteUnit = async (id: string) => {
+    try {
+      const response = await fetch(`/api/units?id=${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        setUnits(prev => prev.filter(unit => unit.id !== id))
+      } else {
+        console.error('Failed to delete unit')
+      }
+    } catch (error) {
+      console.error('Error deleting unit:', error)
+    }
   }
 
   // Component handlers
-  const handleAddComponent = (componentData: Omit<Component, "id">) => {
-    const newComponent: Component = {
-      ...componentData,
-      id: storageUtils.generateId()
+  const handleAddComponent = async (componentData: Omit<Component, "id">) => {
+    try {
+      const newComponent: Component = {
+        ...componentData,
+        id: generateId()
+      }
+      
+      const response = await fetch('/api/components', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newComponent)
+      })
+      
+      if (response.ok) {
+        const createdComponent = await response.json()
+        setComponents(prev => [...prev, createdComponent])
+      } else {
+        console.error('Failed to create component')
+      }
+    } catch (error) {
+      console.error('Error creating component:', error)
     }
-    const updatedComponents = [...components, newComponent]
-    setComponents(updatedComponents)
-    storageUtils.saveComponents(updatedComponents)
   }
 
-  const handleEditComponent = (updatedComponent: Component) => {
-    const updatedComponents = components.map(component => 
-      component.id === updatedComponent.id ? updatedComponent : component
-    )
-    setComponents(updatedComponents)
-    storageUtils.saveComponents(updatedComponents)
+  const handleEditComponent = async (updatedComponent: Component) => {
+    try {
+      const response = await fetch('/api/components', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedComponent)
+      })
+      
+      if (response.ok) {
+        const savedComponent = await response.json()
+        setComponents(prev => prev.map(component => 
+          component.id === savedComponent.id ? savedComponent : component
+        ))
+      } else {
+        console.error('Failed to update component')
+      }
+    } catch (error) {
+      console.error('Error updating component:', error)
+    }
   }
 
-  const handleDeleteComponent = (id: string) => {
-    const updatedComponents = components.filter(component => component.id !== id)
-    setComponents(updatedComponents)
-    storageUtils.saveComponents(updatedComponents)
+  const handleDeleteComponent = async (id: string) => {
+    try {
+      const response = await fetch(`/api/components?id=${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        setComponents(prev => prev.filter(component => component.id !== id))
+      } else {
+        console.error('Failed to delete component')
+      }
+    } catch (error) {
+      console.error('Error deleting component:', error)
+    }
   }
 
   // Item handlers
-  const handleAddItem = (itemData: Omit<Item, "id">) => {
-    const newItem: Item = {
-      ...itemData,
-      id: storageUtils.generateId()
+  const handleAddItem = async (itemData: Omit<Item, "id">) => {
+    try {
+      const newItem: Item = {
+        ...itemData,
+        id: generateId()
+      }
+      
+      const response = await fetch('/api/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newItem)
+      })
+      
+      if (response.ok) {
+        const createdItem = await response.json()
+        setItems(prev => [...prev, createdItem])
+      } else {
+        console.error('Failed to create item')
+      }
+    } catch (error) {
+      console.error('Error creating item:', error)
     }
-    const updatedItems = [...items, newItem]
-    setItems(updatedItems)
-    storageUtils.saveItems(updatedItems)
   }
 
-  const handleEditItem = (updatedItem: Item) => {
-    const updatedItems = items.map(item => 
-      item.id === updatedItem.id ? updatedItem : item
-    )
-    setItems(updatedItems)
-    storageUtils.saveItems(updatedItems)
+  const handleEditItem = async (updatedItem: Item) => {
+    try {
+      const response = await fetch('/api/items', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedItem)
+      })
+      
+      if (response.ok) {
+        const savedItem = await response.json()
+        setItems(prev => prev.map(item => 
+          item.id === savedItem.id ? savedItem : item
+        ))
+      } else {
+        console.error('Failed to update item')
+      }
+    } catch (error) {
+      console.error('Error updating item:', error)
+    }
   }
 
-  const handleDeleteItem = (id: string) => {
-    const updatedItems = items.filter(item => item.id !== id)
-    setItems(updatedItems)
-    storageUtils.saveItems(updatedItems)
+  const handleDeleteItem = async (id: string) => {
+    try {
+      const response = await fetch(`/api/items?id=${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        setItems(prev => prev.filter(item => item.id !== id))
+      } else {
+        console.error('Failed to delete item')
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error)
+    }
   }
 
   return (
@@ -144,7 +310,7 @@ export default function AdminPage() {
         <p className="text-gray-600 mt-2">Manage TFT components: traits, units, components, items, and users</p>
       </div>
 
-      <MigrationTool />
+      {/* <MigrationTool /> */}
 
       <div className="mb-6">
         <nav className="flex space-x-8">
