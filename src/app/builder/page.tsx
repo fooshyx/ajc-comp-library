@@ -44,8 +44,8 @@ export default function CompositionBuilder() {
   
   // UI state
   const [activeTab, setActiveTab] = useState<"units" | "traits" | "items">("units")
-  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null)
   const [selectedPosition, setSelectedPosition] = useState<number | null>(null)
+  const [itemSortType, setItemSortType] = useState<'all' | 'standard' | 'emblem' | 'artifact' | 'other'>('all')
   
   // Load game data on mount
   useEffect(() => {
@@ -85,30 +85,40 @@ export default function CompositionBuilder() {
     return matchesCost && matchesSearch
   })
   
-  // Calculate active traits
-  const activeTraits = traits.filter(trait => {
-    const unitsWithTrait = composition.units.filter(boardUnit => {
-      const unit = units.find(u => u.id === boardUnit.unitId)
-      return unit?.traits.includes(trait.name)
-    }).length
-    
-    return unitsWithTrait > 0
-  }).map(trait => {
+  // Calculate active traits with breakpoints
+  const activeTraits = traits.map(trait => {
     const count = composition.units.filter(boardUnit => {
       const unit = units.find(u => u.id === boardUnit.unitId)
       return unit?.traits.includes(trait.name)
     }).length
     
-    return { ...trait, count }
-  })
+    if (count === 0) return null
+    
+    // Find the highest active breakpoint
+    const activeBreakpoint = trait.breakpoints
+      .filter(bp => count >= bp.num)
+      .sort((a, b) => b.num - a.num)[0]
+    
+    return { 
+      ...trait, 
+      count, 
+      activeBreakpoint: activeBreakpoint || null,
+      isActive: count > 0
+    }
+  }).filter(Boolean)
+  
+  // Filter items based on selected type
+  const filteredItems = itemSortType === 'all' 
+    ? items 
+    : items.filter(item => item.type === itemSortType)
   
   // Handle placing a unit on the board
-  const handlePlaceUnit = (unit: Unit, position: number) => {
-    if (board[position]) return // Position occupied
+  const handlePlaceUnit = (unit: Unit) => {
+    if (selectedPosition === null || board[selectedPosition]) return
     
     const newBoardUnit: BoardUnit = {
       unitId: unit.id,
-      position,
+      position: selectedPosition,
       items: []
     }
     
@@ -116,6 +126,10 @@ export default function CompositionBuilder() {
       ...prev,
       units: [...prev.units, newBoardUnit]
     }))
+    
+    // Clear selection after placing
+    setSelectedPosition(null)
+    setActiveTab('units')
   }
   
   // Handle removing unit from board
@@ -124,17 +138,24 @@ export default function CompositionBuilder() {
       ...prev,
       units: prev.units.filter(unit => unit.position !== position)
     }))
+    
+    // Clear selection if removing the selected unit
+    if (selectedPosition === position) {
+      setSelectedPosition(null)
+    }
   }
   
   // Handle adding item to unit
-  const handleAddItemToUnit = (position: number, itemId: string) => {
-    const boardUnit = board[position]
+  const handleAddItemToUnit = (itemId: string) => {
+    if (selectedPosition === null) return
+    
+    const boardUnit = board[selectedPosition]
     if (!boardUnit || boardUnit.items.length >= 3) return
     
     setComposition(prev => ({
       ...prev,
       units: prev.units.map(unit => 
-        unit.position === position 
+        unit.position === selectedPosition 
           ? { ...unit, items: [...unit.items, itemId] }
           : unit
       )
@@ -142,15 +163,32 @@ export default function CompositionBuilder() {
   }
   
   // Handle removing item from unit
-  const handleRemoveItemFromUnit = (position: number, itemIndex: number) => {
+  const handleRemoveItemFromUnit = (itemIndex: number) => {
+    if (selectedPosition === null) return
+    
     setComposition(prev => ({
       ...prev,
       units: prev.units.map(unit => 
-        unit.position === position 
+        unit.position === selectedPosition 
           ? { ...unit, items: unit.items.filter((_, index) => index !== itemIndex) }
           : unit
       )
     }))
+  }
+  
+  // Handle board square click
+  const handleSquareClick = (position: number) => {
+    const boardUnit = board[position]
+    
+    if (boardUnit) {
+      // Square has a unit - select it for item management
+      setSelectedPosition(position)
+      setActiveTab('items')
+    } else {
+      // Empty square - select it for unit placement
+      setSelectedPosition(position)
+      setActiveTab('units')
+    }
   }
   
   // Save composition
@@ -317,13 +355,27 @@ export default function CompositionBuilder() {
                     </div>
                   </div>
                   
+                  {/* Selected Square Info */}
+                  {selectedPosition !== null && !board[selectedPosition] && (
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-sm text-blue-800 font-medium">
+                        Position {selectedPosition + 1} selected - Choose a unit to place
+                      </p>
+                    </div>
+                  )}
+                  
                   {/* Units List */}
                   <div className="max-h-96 overflow-y-auto space-y-2">
                     {filteredUnits.map(unit => (
                       <div
                         key={unit.id}
-                        className="flex items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 cursor-pointer"
-                        onClick={() => setSelectedUnit(unit)}
+                        className={`
+                          flex items-center p-2 rounded-md cursor-pointer transition-colors
+                          ${selectedPosition !== null && !board[selectedPosition] 
+                            ? 'bg-blue-50 hover:bg-blue-100 border border-blue-200' 
+                            : 'bg-gray-50 hover:bg-gray-100'}
+                        `}
+                        onClick={() => handlePlaceUnit(unit)}
                       >
                         <img
                           src={unit.image}
@@ -339,6 +391,14 @@ export default function CompositionBuilder() {
                       </div>
                     ))}
                   </div>
+                  
+                  {selectedPosition === null && (
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                      <p className="text-sm text-yellow-800">
+                        Select an empty square on the board first, then choose a unit to place there.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -370,28 +430,116 @@ export default function CompositionBuilder() {
               
               {/* Items Tab */}
               {activeTab === "items" && (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {items.map(item => (
-                    <div
-                      key={item.id}
-                      className="flex items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 cursor-pointer"
-                      onClick={() => {
-                        if (selectedPosition !== null) {
-                          handleAddItemToUnit(selectedPosition, item.id)
-                        }
-                      }}
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-8 h-8 rounded mr-3"
-                      />
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">{item.name}</div>
-                        <div className="text-xs text-gray-500 capitalize">{item.type}</div>
+                <div className="space-y-4">
+                  {/* Selected Unit Info */}
+                  {selectedPosition !== null && board[selectedPosition] && (
+                    <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                      <div className="flex items-center">
+                        <img
+                          src={units.find(u => u.id === board[selectedPosition]?.unitId)?.image}
+                          alt="Selected unit"
+                          className="w-6 h-6 rounded mr-2"
+                        />
+                        <div>
+                          <p className="text-sm text-green-800 font-medium">
+                            Managing items for {units.find(u => u.id === board[selectedPosition]?.unitId)?.name}
+                          </p>
+                          <p className="text-xs text-green-600">
+                            {board[selectedPosition]?.items.length || 0}/3 items equipped
+                          </p>
+                        </div>
                       </div>
+                      
+                      {/* Current Items */}
+                      {board[selectedPosition]?.items.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-xs font-medium text-green-700 mb-2">Current Items:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {board[selectedPosition]?.items.map((itemId, itemIndex) => {
+                              const item = items.find(i => i.id === itemId)
+                              return (
+                                <div
+                                  key={itemIndex}
+                                  className="flex items-center bg-white rounded px-2 py-1 border border-green-200 cursor-pointer hover:bg-red-50"
+                                  onClick={() => handleRemoveItemFromUnit(itemIndex)}
+                                >
+                                  <img
+                                    src={item?.image}
+                                    alt={item?.name}
+                                    className="w-4 h-4 rounded mr-1"
+                                  />
+                                  <span className="text-xs">{item?.name}</span>
+                                  <span className="ml-1 text-red-500 hover:text-red-700">×</span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  ))}
+                  )}
+                  
+                  {/* Item Type Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
+                    <div className="flex flex-wrap gap-2">
+                      {(['all', 'standard', 'emblem', 'artifact', 'other'] as const).map(type => (
+                        <button
+                          key={type}
+                          onClick={() => setItemSortType(type)}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                            itemSortType === type
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          }`}
+                        >
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Items List */}
+                  <div className="max-h-80 overflow-y-auto space-y-2">
+                    {filteredItems.map(item => (
+                      <div
+                        key={item.id}
+                        className={`
+                          flex items-center p-2 rounded-md cursor-pointer transition-colors
+                          ${selectedPosition !== null && board[selectedPosition] && board[selectedPosition]?.items.length < 3
+                            ? 'bg-green-50 hover:bg-green-100 border border-green-200' 
+                            : 'bg-gray-50 hover:bg-gray-100'}
+                        `}
+                        onClick={() => handleAddItemToUnit(item.id)}
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-8 h-8 rounded mr-3"
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{item.name}</div>
+                          <div className="text-xs text-gray-500 capitalize">{item.type}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {selectedPosition === null && (
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                      <p className="text-sm text-yellow-800">
+                        Select a unit on the board to manage its items.
+                      </p>
+                    </div>
+                  )}
+                  
+                  {selectedPosition !== null && !board[selectedPosition] && (
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                      <p className="text-sm text-yellow-800">
+                        The selected square is empty. Place a unit first to manage items.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -403,6 +551,39 @@ export default function CompositionBuilder() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-medium mb-4">Team Board</h3>
             
+            {/* Active Traits Display */}
+            {activeTraits.length > 0 && (
+              <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Active Traits</h4>
+                <div className="flex flex-wrap gap-2">
+                  {activeTraits.map(trait => (
+                    <div 
+                      key={trait.id}
+                      className="flex items-center space-x-2 bg-white rounded-lg p-2 border"
+                      style={{ 
+                        borderColor: trait.activeBreakpoint?.color || '#e5e7eb',
+                        backgroundColor: trait.activeBreakpoint ? `${trait.activeBreakpoint.color}10` : 'white'
+                      }}
+                    >
+                      <div 
+                        className="w-6 h-6 rounded flex items-center justify-center"
+                        dangerouslySetInnerHTML={{ __html: trait.image }}
+                      />
+                      <div className="text-sm">
+                        <span className="font-medium">{trait.name}</span>
+                        <span 
+                          className="ml-2 px-1.5 py-0.5 rounded text-xs font-bold text-white"
+                          style={{ backgroundColor: trait.activeBreakpoint?.color || '#6b7280' }}
+                        >
+                          {trait.count}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             {/* Board Grid */}
             <div className="grid grid-cols-7 gap-2 mb-4">
               {board.map((boardUnit, index) => {
@@ -413,35 +594,33 @@ export default function CompositionBuilder() {
                   <div
                     key={index}
                     className={`
-                      aspect-square border-2 rounded-lg flex flex-col items-center justify-center cursor-pointer
+                      aspect-square border-2 rounded-lg flex flex-col items-center justify-center cursor-pointer relative
                       ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
                       ${unit ? 'bg-gray-100' : 'bg-gray-50'}
                     `}
-                    onClick={() => {
-                      if (unit) {
-                        setSelectedPosition(isSelected ? null : index)
-                      } else if (selectedUnit) {
-                        handlePlaceUnit(selectedUnit, index)
-                        setSelectedUnit(null)
-                      } else {
-                        setSelectedPosition(isSelected ? null : index)
-                      }
-                    }}
-                    onDoubleClick={() => {
-                      if (unit) {
-                        handleRemoveUnit(index)
-                        setSelectedPosition(null)
-                      }
-                    }}
+                    onClick={() => handleSquareClick(index)}
                   >
                     {unit && boardUnit ? (
                       <>
+                        {/* Remove button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleRemoveUnit(index)
+                          }}
+                          className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs z-10"
+                        >
+                          ×
+                        </button>
+                        
                         <img
                           src={unit.image}
                           alt={unit.name}
                           className="w-8 h-8 rounded mb-1"
                         />
-                        <div className="text-xs text-center font-medium">{unit.name}</div>
+                        <div className="text-xs text-center font-medium truncate w-full px-1">{unit.name}</div>
+                        
+                        {/* Items display */}
                         {boardUnit.items.length > 0 && (
                           <div className="flex gap-1 mt-1">
                             {boardUnit.items.slice(0, 3).map((itemId, itemIndex) => {
@@ -451,11 +630,7 @@ export default function CompositionBuilder() {
                                   key={itemIndex}
                                   src={item?.image}
                                   alt={item?.name}
-                                  className="w-3 h-3 rounded"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleRemoveItemFromUnit(index, itemIndex)
-                                  }}
+                                  className="w-3 h-3 rounded border border-gray-400"
                                 />
                               )
                             })}
@@ -474,19 +649,23 @@ export default function CompositionBuilder() {
             
             {/* Instructions */}
             <div className="text-sm text-gray-600">
-              <p><strong>Instructions:</strong></p>
+              <p><strong>New Workflow:</strong></p>
               <ul className="list-disc list-inside mt-1 space-y-1">
-                <li>Click on a unit from the left panel, then click an empty board position to place it</li>
-                <li>Click on a unit on the board to select it, then click items to equip them</li>
-                <li>Double-click a unit on the board to remove it</li>
-                <li>Click on equipped items to remove them</li>
+                <li><strong>Step 1:</strong> Click an empty square on the board to select it</li>
+                <li><strong>Step 2:</strong> Choose a unit from the Units tab to place there</li>
+                <li><strong>Step 3:</strong> Click a unit on the board to manage its items</li>
+                <li><strong>Remove:</strong> Use the red × button on any unit to remove it</li>
+                <li><strong>Items:</strong> Click equipped items in the management panel to remove them</li>
               </ul>
             </div>
             
             {selectedPosition !== null && (
               <div className="mt-4 p-3 bg-blue-50 rounded-md">
                 <p className="text-sm text-blue-800">
-                  Position {selectedPosition + 1} selected. Click items from the left panel to equip them.
+                  {board[selectedPosition] 
+                    ? `Managing position ${selectedPosition + 1} - Switch to Items tab to equip items`
+                    : `Position ${selectedPosition + 1} selected - Switch to Units tab to place a unit`
+                  }
                 </p>
               </div>
             )}
