@@ -63,9 +63,22 @@ export async function POST(request: NextRequest) {
       )
     `
 
+    await sql`
+      CREATE TABLE IF NOT EXISTS "compositions" (
+        "id" text PRIMARY KEY NOT NULL,
+        "user_id" text REFERENCES "users"("id"),
+        "name" text NOT NULL,
+        "description" text,
+        "units" jsonb NOT NULL,
+        "is_public" boolean DEFAULT false NOT NULL,
+        "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+        "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP
+      )
+    `
+
     return NextResponse.json({ 
       message: 'Database tables created successfully',
-      tables: ['components', 'items', 'traits', 'units', 'users']
+      tables: ['components', 'items', 'traits', 'units', 'users', 'compositions']
     })
   } catch (error) {
     console.error('Failed to create database tables:', error)

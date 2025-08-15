@@ -9,11 +9,12 @@ import TraitsManager from "@/components/admin/TraitsManager"
 import ComponentsManager from "@/components/admin/ComponentsManager"
 import ItemsManager from "@/components/admin/ItemsManager"
 import UsersManager from "@/components/admin/UsersManager"
+import CacheManager from "@/components/admin/CacheManager"
 import MigrationTool from "@/components/MigrationTool"
 
 export default function AdminPage() {
   const { data: session, status } = useSession()
-  const [activeTab, setActiveTab] = useState<"traits" | "units" | "components" | "items" | "users">("traits")
+  const [activeTab, setActiveTab] = useState<"traits" | "units" | "components" | "items" | "users" | "cache">("traits")
   const [units, setUnits] = useState<Unit[]>([])
   const [traits, setTraits] = useState<Trait[]>([])
   const [components, setComponents] = useState<Component[]>([])
@@ -364,6 +365,16 @@ export default function AdminPage() {
           >
             Users
           </button>
+          <button
+            onClick={() => setActiveTab("cache")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "cache"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Cache
+          </button>
         </nav>
       </div>
 
@@ -408,6 +419,10 @@ export default function AdminPage() {
         
         {activeTab === "users" && (
           <UsersManager />
+        )}
+        
+        {activeTab === "cache" && (
+          <CacheManager />
         )}
       </div>
     </div>

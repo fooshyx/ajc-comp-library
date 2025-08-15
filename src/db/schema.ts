@@ -48,6 +48,17 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`)
 })
 
+export const compositions = pgTable('compositions', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').references(() => users.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  units: jsonb('units').notNull().$type<Array<{unitId: string, items: string[], position: number}>>(),
+  isPublic: boolean('is_public').default(false).notNull(),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`)
+})
+
 export type Trait = typeof traits.$inferSelect
 export type NewTrait = typeof traits.$inferInsert
 export type Unit = typeof units.$inferSelect
@@ -58,3 +69,5 @@ export type Item = typeof items.$inferSelect
 export type NewItem = typeof items.$inferInsert
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
+export type Composition = typeof compositions.$inferSelect
+export type NewComposition = typeof compositions.$inferInsert
