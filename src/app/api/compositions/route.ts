@@ -14,15 +14,15 @@ export async function GET(request: NextRequest) {
     const userId = url.searchParams.get('userId')
     const publicOnly = url.searchParams.get('public') === 'true'
 
-    let query = db.select().from(compositions)
+    let result
 
     if (publicOnly) {
-      query = query.where(eq(compositions.isPublic, true))
+      result = await db.select().from(compositions).where(eq(compositions.isPublic, true))
     } else if (userId) {
-      query = query.where(eq(compositions.userId, userId))
+      result = await db.select().from(compositions).where(eq(compositions.userId, userId))
+    } else {
+      result = await db.select().from(compositions)
     }
-
-    const result = await query
 
     return NextResponse.json(result)
   } catch (error) {
