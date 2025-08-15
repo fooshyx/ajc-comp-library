@@ -17,6 +17,7 @@ interface CompositionData {
   description: string
   units: BoardUnit[]
   rating: 'S' | 'A' | 'B' | 'C' | ''
+  isPublic: boolean
 }
 
 export default function CompositionBuilder() {
@@ -38,7 +39,8 @@ export default function CompositionBuilder() {
     name: "",
     description: "",
     units: [],
-    rating: ""
+    rating: "",
+    isPublic: false
   })
   
   // Board state (28 hexagons in TFT)
@@ -49,7 +51,7 @@ export default function CompositionBuilder() {
   const [selectedPosition, setSelectedPosition] = useState<number | null>(null)
   const [itemSortType, setItemSortType] = useState<'all' | 'standard' | 'emblem' | 'artifact' | 'other'>('all')
   
-  // Load game data on mount
+  // Load game data on mount and check for edit composition
   useEffect(() => {
     const loadGameData = async () => {
       try {
@@ -59,6 +61,25 @@ export default function CompositionBuilder() {
         setTraits(gameData.traits)
         setItems(gameData.items)
         setComponents(gameData.components)
+
+        // Check if we're editing an existing composition
+        const editComposition = sessionStorage.getItem('editComposition')
+        if (editComposition) {
+          try {
+            const comp: Composition = JSON.parse(editComposition)
+            setComposition({
+              name: comp.name,
+              description: comp.description || '',
+              units: comp.units,
+              rating: (comp.rating as 'S' | 'A' | 'B' | 'C') || '',
+              isPublic: comp.isPublic
+            })
+            // Clear the session storage
+            sessionStorage.removeItem('editComposition')
+          } catch (error) {
+            console.error('Error loading composition for editing:', error)
+          }
+        }
       } catch (error) {
         console.error('Error loading game data:', error)
       } finally {
@@ -195,30 +216,52 @@ export default function CompositionBuilder() {
   
   // Save composition
   const handleSaveComposition = async () => {
-    if (!session?.user?.id || !composition.name.trim()) {
-      alert('Please log in and provide a composition name')
+    console.log('Session data:', session)
+    console.log('User ID:', session?.user?.id)
+    console.log('Composition name:', composition.name)
+    console.log('Composition units:', composition.units)
+    
+    if (!session?.user?.id) {
+      alert('Please log in first')
+      return
+    }
+    
+    if (!composition.name.trim()) {
+      alert('Please provide a composition name')
+      return
+    }
+    
+    if (composition.units.length === 0) {
+      alert('Please add at least one unit to your composition')
       return
     }
     
     try {
-      const result = await hybridStorage.saveComposition({
+      const compositionData = {
         userId: session.user.id,
-        addedBy: session.user.name || session.user.email,
-        name: composition.name,
-        description: composition.description,
+        addedBy: session.user.name || session.user.email || 'Unknown',
+        name: composition.name.trim(),
+        description: composition.description.trim() || null,
         units: composition.units,
         rating: composition.rating || null,
-        isPublic: false
-      })
+        isPublic: composition.isPublic
+      }
+      
+      console.log('Sending composition data:', compositionData)
+      
+      const result = await hybridStorage.saveComposition(compositionData)
+      
+      console.log('Save result:', result)
       
       if (result) {
         alert('Composition saved successfully!')
+        // Optionally clear the form or redirect
       } else {
-        alert('Failed to save composition')
+        alert('Failed to save composition - no result returned')
       }
     } catch (error) {
       console.error('Error saving composition:', error)
-      alert('Failed to save composition')
+      alert(`Failed to save composition: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
   
@@ -297,6 +340,24 @@ export default function CompositionBuilder() {
             </div>
           </div>
         )}
+
+        {/* Public Checkbox */}
+        <div className="mb-4">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={composition.isPublic}
+              onChange={(e) => setComposition(prev => ({ ...prev, isPublic: e.target.checked }))}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              Make this composition public
+            </span>
+            <span className="text-xs text-gray-500">
+              (Public compositions can be viewed by all users)
+            </span>
+          </label>
+        </div>
         
         <div className="flex gap-3">
           <button

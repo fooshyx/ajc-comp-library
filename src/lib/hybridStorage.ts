@@ -244,15 +244,26 @@ class HybridStorage {
 
   async saveComposition(composition: Omit<NewComposition, 'id'>): Promise<Composition | null> {
     try {
+      console.log('hybridStorage.saveComposition called with:', composition)
+      
       const response = await fetch('/api/compositions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(composition)
       })
 
-      if (!response.ok) throw new Error('Failed to save composition')
+      console.log('API response status:', response.status)
+      console.log('API response ok:', response.ok)
       
-      return await response.json()
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('API error response:', errorText)
+        throw new Error(`Failed to save composition: ${response.status} ${errorText}`)
+      }
+      
+      const result = await response.json()
+      console.log('API success response:', result)
+      return result
     } catch (error) {
       console.error('Error saving composition:', error)
       return null

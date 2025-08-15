@@ -39,10 +39,17 @@ export async function GET(request: NextRequest) {
 // POST - Create new composition
 export async function POST(request: NextRequest) {
   try {
+    console.log('POST /api/compositions called')
+    
     const body = await request.json()
+    console.log('Request body:', body)
+    
     const { userId, addedBy, name, description, units, rating, isPublic } = body
 
+    console.log('Extracted fields:', { userId, addedBy, name, description, units, rating, isPublic })
+
     if (!name || !units || !userId || !addedBy) {
+      console.log('Missing required fields')
       return NextResponse.json(
         { error: 'Missing required fields: name, units, userId, addedBy' },
         { status: 400 }
@@ -51,8 +58,8 @@ export async function POST(request: NextRequest) {
 
     const newComposition = {
       id: generateId(),
-      userId,
-      addedBy,
+      userId: userId,
+      addedBy: addedBy,
       name,
       description: description || null,
       units,
@@ -60,13 +67,17 @@ export async function POST(request: NextRequest) {
       isPublic: isPublic || false
     }
 
+    console.log('New composition to insert:', newComposition)
+
     const result = await db.insert(compositions).values(newComposition).returning()
+    
+    console.log('Database insert result:', result)
 
     return NextResponse.json(result[0], { status: 201 })
   } catch (error) {
     console.error('Error creating composition:', error)
     return NextResponse.json(
-      { error: 'Failed to create composition' },
+      { error: 'Failed to create composition', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
