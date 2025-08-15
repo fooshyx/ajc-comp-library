@@ -12,7 +12,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-8">
             <Link href="/" className="text-xl font-bold text-gray-900 hover:text-gray-700">
-              AJC COMP LIBRARY
+              🤪 AJC 🤪 COMPS LIST
             </Link>
 
             {session && (
