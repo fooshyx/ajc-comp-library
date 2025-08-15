@@ -242,7 +242,7 @@ class HybridStorage {
     }
   }
 
-  async saveComposition(composition: NewComposition): Promise<Composition | null> {
+  async saveComposition(composition: Omit<NewComposition, 'id'>): Promise<Composition | null> {
     try {
       const response = await fetch('/api/compositions', {
         method: 'POST',
