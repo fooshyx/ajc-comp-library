@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, text, integer, jsonb, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, text, integer, jsonb, timestamp, boolean } from 'drizzle-orm/pg-core'
 
 export const traits = pgTable('traits', {
   id: text('id').primaryKey(),
@@ -38,6 +38,16 @@ export const items = pgTable('items', {
   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`)
 })
 
+export const users = pgTable('users', {
+  id: text('id').primaryKey(),
+  username: text('username').notNull().unique(),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  isAdmin: boolean('is_admin').default(false).notNull(),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`)
+})
+
 export type Trait = typeof traits.$inferSelect
 export type NewTrait = typeof traits.$inferInsert
 export type Unit = typeof units.$inferSelect
@@ -46,3 +56,5 @@ export type Component = typeof components.$inferSelect
 export type NewComponent = typeof components.$inferInsert
 export type Item = typeof items.$inferSelect
 export type NewItem = typeof items.$inferInsert
+export type User = typeof users.$inferSelect
+export type NewUser = typeof users.$inferInsert

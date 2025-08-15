@@ -9,10 +9,12 @@ import UnitsManager from "@/components/admin/UnitsManager"
 import TraitsManager from "@/components/admin/TraitsManager"
 import ComponentsManager from "@/components/admin/ComponentsManager"
 import ItemsManager from "@/components/admin/ItemsManager"
+import UsersManager from "@/components/admin/UsersManager"
+import MigrationTool from "@/components/MigrationTool"
 
 export default function AdminPage() {
   const { data: session, status } = useSession()
-  const [activeTab, setActiveTab] = useState<"traits" | "units" | "components" | "items">("traits")
+  const [activeTab, setActiveTab] = useState<"traits" | "units" | "components" | "items" | "users">("traits")
   const [units, setUnits] = useState<Unit[]>([])
   const [traits, setTraits] = useState<Trait[]>([])
   const [components, setComponents] = useState<Component[]>([])
@@ -139,8 +141,10 @@ export default function AdminPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-600 mt-2">Manage TFT components: traits, units, components, and items</p>
+        <p className="text-gray-600 mt-2">Manage TFT components: traits, units, components, items, and users</p>
       </div>
+
+      <MigrationTool />
 
       <div className="mb-6">
         <nav className="flex space-x-8">
@@ -184,6 +188,16 @@ export default function AdminPage() {
           >
             Items
           </button>
+          <button
+            onClick={() => setActiveTab("users")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "users"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Users
+          </button>
         </nav>
       </div>
 
@@ -224,6 +238,10 @@ export default function AdminPage() {
             onEditItem={handleEditItem}
             onDeleteItem={handleDeleteItem}
           />
+        )}
+        
+        {activeTab === "users" && (
+          <UsersManager />
         )}
       </div>
     </div>

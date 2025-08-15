@@ -1,39 +1,47 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { db } from "@/db"
+import { users } from "@/db/schema"
+import { eq } from "drizzle-orm"
+import bcrypt from "bcryptjs"
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.username || !credentials?.password) {
           return null
         }
 
-        // For now, hardcode allowed users
-        // In production, you'd check against a database
-        const allowedUsers = [
-          { id: "1", email: "admin@example.com", password: "admin123", name: "Admin" },
-          // Add more users as needed
-        ]
+        try {
+          const user = await db.select().from(users)
+            .where(eq(users.username, credentials.username))
+            .limit(1)
 
-        const user = allowedUsers.find(
-          u => u.email === credentials.email && u.password === credentials.password
-        )
-
-        if (user) {
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
+          if (!user[0]) {
+            return null
           }
-        }
 
-        return null
+          const isPasswordValid = await bcrypt.compare(credentials.password, user[0].passwordHash)
+          
+          if (!isPasswordValid) {
+            return null
+          }
+
+          return {
+            id: user[0].id,
+            email: user[0].email,
+            name: user[0].username,
+          }
+        } catch (error) {
+          console.error("Authentication error:", error)
+          return null
+        }
       }
     })
   ],
