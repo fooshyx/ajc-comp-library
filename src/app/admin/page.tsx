@@ -51,6 +51,32 @@ export default function AdminPage() {
     redirect("/auth/signin")
   }
 
+  // Check if user is admin
+  if (!session.user?.isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-6">You need administrator privileges to access this page.</p>
+          <div className="space-x-4">
+            <a
+              href="/"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md text-sm font-medium"
+            >
+              Go Home
+            </a>
+            <a
+              href="/builder"
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md text-sm font-medium"
+            >
+              Composition Builder
+            </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Helper function to generate unique IDs
   const generateId = (): string => {
     return Date.now().toString(36) + Math.random().toString(36).substr(2)

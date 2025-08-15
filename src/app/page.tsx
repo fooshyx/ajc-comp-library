@@ -1,6 +1,10 @@
+"use client"
+
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 
 export default function Home() {
+  const { data: session } = useSession()
   return (
     <div className="flex flex-col items-center justify-center p-24">
       <div className="z-10 w-full max-w-5xl items-center justify-between text-sm">
@@ -19,12 +23,14 @@ export default function Home() {
             Build Composition
           </Link>
           
-          <Link
-            href="/admin"
-            className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors"
-          >
-            Admin Panel
-          </Link>
+          {session?.user?.isAdmin && (
+            <Link
+              href="/admin"
+              className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors"
+            >
+              Admin Panel
+            </Link>
+          )}
         </div>
         
         <div className="mt-12 bg-green-50 rounded-lg p-6">
