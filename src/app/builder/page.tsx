@@ -434,7 +434,7 @@ export default function CompositionBuilder() {
                       }
                     }}
                   >
-                    {unit ? (
+                    {unit && boardUnit ? (
                       <>
                         <img
                           src={unit.image}
