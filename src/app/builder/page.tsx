@@ -16,6 +16,7 @@ interface CompositionData {
   name: string
   description: string
   units: BoardUnit[]
+  rating: 'S' | 'A' | 'B' | 'C' | ''
 }
 
 export default function CompositionBuilder() {
@@ -36,7 +37,8 @@ export default function CompositionBuilder() {
   const [composition, setComposition] = useState<CompositionData>({
     name: "",
     description: "",
-    units: []
+    units: [],
+    rating: ""
   })
   
   // Board state (28 hexagons in TFT)
@@ -105,7 +107,7 @@ export default function CompositionBuilder() {
       activeBreakpoint: activeBreakpoint || null,
       isActive: count > 0
     }
-  }).filter(Boolean)
+  }).filter((trait): trait is NonNullable<typeof trait> => trait !== null)
   
   // Filter items based on selected type
   const filteredItems = itemSortType === 'all' 
@@ -201,9 +203,11 @@ export default function CompositionBuilder() {
     try {
       const result = await hybridStorage.saveComposition({
         userId: session.user.id,
+        addedBy: session.user.name || session.user.email,
         name: composition.name,
         description: composition.description,
         units: composition.units,
+        rating: composition.rating || null,
         isPublic: false
       })
       
@@ -221,6 +225,17 @@ export default function CompositionBuilder() {
   // Clear board
   const handleClearBoard = () => {
     setComposition(prev => ({ ...prev, units: [] }))
+  }
+  
+  // Get rating color
+  const getRatingColor = (rating: string) => {
+    switch (rating) {
+      case 'S': return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white'
+      case 'A': return 'bg-gradient-to-r from-green-400 to-green-600 text-white'
+      case 'B': return 'bg-gradient-to-r from-blue-400 to-blue-600 text-white'
+      case 'C': return 'bg-gradient-to-r from-gray-400 to-gray-600 text-white'
+      default: return 'bg-gray-200 text-gray-600'
+    }
   }
   
   if (loading) {
@@ -241,7 +256,7 @@ export default function CompositionBuilder() {
       
       {/* Composition Details */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <input
             type="text"
             placeholder="Composition Name"
@@ -256,7 +271,32 @@ export default function CompositionBuilder() {
             onChange={(e) => setComposition(prev => ({ ...prev, description: e.target.value }))}
             className="p-2 border border-gray-300 rounded-md"
           />
+          <div>
+            <select
+              value={composition.rating}
+              onChange={(e) => setComposition(prev => ({ ...prev, rating: e.target.value as 'S' | 'A' | 'B' | 'C' | '' }))}
+              className="w-full p-2 border border-gray-300 rounded-md"
+            >
+              <option value="">Select Rating (Optional)</option>
+              <option value="S">S Tier - Meta</option>
+              <option value="A">A Tier - Strong</option>
+              <option value="B">B Tier - Good</option>
+              <option value="C">C Tier - Situational</option>
+            </select>
+          </div>
         </div>
+        
+        {/* Rating Preview */}
+        {composition.rating && (
+          <div className="mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Rating Preview:</span>
+              <span className={`px-3 py-1 rounded-full text-sm font-bold ${getRatingColor(composition.rating)}`}>
+                {composition.rating} Tier
+              </span>
+            </div>
+          </div>
+        )}
         
         <div className="flex gap-3">
           <button

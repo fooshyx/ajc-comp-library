@@ -51,9 +51,11 @@ export const users = pgTable('users', {
 export const compositions = pgTable('compositions', {
   id: text('id').primaryKey(),
   userId: text('user_id').references(() => users.id),
+  addedBy: text('added_by').notNull(),
   name: text('name').notNull(),
   description: text('description'),
   units: jsonb('units').notNull().$type<Array<{unitId: string, items: string[], position: number}>>(),
+  rating: text('rating').$type<'S' | 'A' | 'B' | 'C'>(),
   isPublic: boolean('is_public').default(false).notNull(),
   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`)

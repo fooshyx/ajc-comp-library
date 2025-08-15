@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { db } from '@/db'
 import { compositions } from '@/db/schema'
 import { eq } from 'drizzle-orm'
@@ -38,11 +40,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, name, description, units, isPublic } = body
+    const { userId, addedBy, name, description, units, rating, isPublic } = body
 
-    if (!name || !units || !userId) {
+    if (!name || !units || !userId || !addedBy) {
       return NextResponse.json(
-        { error: 'Missing required fields: name, units, userId' },
+        { error: 'Missing required fields: name, units, userId, addedBy' },
         { status: 400 }
       )
     }
@@ -50,9 +52,11 @@ export async function POST(request: NextRequest) {
     const newComposition = {
       id: generateId(),
       userId,
+      addedBy,
       name,
       description: description || null,
       units,
+      rating: rating || null,
       isPublic: isPublic || false
     }
 
@@ -111,9 +115,18 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Delete composition
+// DELETE - Delete composition (with ownership check)
 export async function DELETE(request: NextRequest) {
   try {
+    // Check if user is authenticated
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const url = new URL(request.url)
     const id = url.searchParams.get('id')
 
@@ -124,17 +137,36 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const result = await db
-      .delete(compositions)
+    // First, get the composition to check ownership
+    const composition = await db
+      .select()
+      .from(compositions)
       .where(eq(compositions.id, id))
-      .returning()
+      .limit(1)
 
-    if (result.length === 0) {
+    if (composition.length === 0) {
       return NextResponse.json(
         { error: 'Composition not found' },
         { status: 404 }
       )
     }
+
+    // Check if user owns the composition or is admin
+    const isOwner = composition[0].userId === session.user.id
+    const isAdmin = session.user.isAdmin
+
+    if (!isOwner && !isAdmin) {
+      return NextResponse.json(
+        { error: 'You can only delete your own compositions' },
+        { status: 403 }
+      )
+    }
+
+    // Delete the composition
+    const result = await db
+      .delete(compositions)
+      .where(eq(compositions.id, id))
+      .returning()
 
     return NextResponse.json({ message: 'Composition deleted successfully' })
   } catch (error) {

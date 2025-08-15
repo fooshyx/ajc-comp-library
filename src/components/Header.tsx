@@ -12,21 +12,30 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-8">
             <Link href="/" className="text-xl font-bold text-gray-900 hover:text-gray-700">
-              TFT Composition Library
+              AJC COMP LIBRARY
             </Link>
-            
+
             {session && (
               <nav className="flex space-x-4">
-                <Link 
-                  href="/admin" 
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900"
-                >
-                  Admin
-                </Link>
+                {session.user?.isAdmin ? (
+                  <Link
+                    href="/admin"
+                    className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                  >
+                    Admin
+                  </Link>
+                ) : (
+                  <Link
+                    href="/settings"
+                    className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                  >
+                    User Settings
+                  </Link>
+                )}
               </nav>
             )}
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {status === "loading" ? (
               <div className="text-sm text-gray-500">Loading...</div>

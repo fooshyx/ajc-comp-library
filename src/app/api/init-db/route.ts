@@ -67,9 +67,11 @@ export async function POST(request: NextRequest) {
       CREATE TABLE IF NOT EXISTS "compositions" (
         "id" text PRIMARY KEY NOT NULL,
         "user_id" text REFERENCES "users"("id"),
+        "added_by" text NOT NULL,
         "name" text NOT NULL,
         "description" text,
         "units" jsonb NOT NULL,
+        "rating" text CHECK (rating IN ('S', 'A', 'B', 'C')),
         "is_public" boolean DEFAULT false NOT NULL,
         "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
         "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP
