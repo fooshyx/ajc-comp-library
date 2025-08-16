@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import { hybridStorage } from "@/lib/hybridStorage"
 import { Unit, Trait, Component, Item } from "@/types/tft"
 import { Composition } from "@/db/schema"
+import { getBreakpointColorHex } from "@/lib/traitColors"
 
 interface BoardUnit {
   unitId: string
@@ -141,6 +142,49 @@ export default function CompositionBuilderModal({
     return matchesCost && matchesSearch
   })
   
+  // Helper function to get trait color based on count and breakpoints
+  const getTraitColor = (trait: Trait, count: number) => {
+    if (count === 0) return { hex: '#6b7280', name: 'Inactive' } // gray for inactive
+    
+    // Find the highest active breakpoint
+    const activeBreakpoint = trait.breakpoints
+      .filter(bp => count >= bp.num)
+      .sort((a, b) => b.num - a.num)[0]
+    
+    if (activeBreakpoint) {
+      return { hex: getBreakpointColorHex(activeBreakpoint.color), name: activeBreakpoint.color }
+    }
+    
+    // If count > 0 but no breakpoint reached, use black/dark color
+    return { hex: '#1f2937', name: 'Active' } // dark gray for active but no breakpoint
+  }
+
+  // Helper function to modify SVG fill color
+  const modifySvgColor = (svgString: string, color: string) => {
+    if (!svgString) return svgString
+    
+    // Parse the SVG and modify fill colors
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(svgString, 'image/svg+xml')
+    const svg = doc.querySelector('svg')
+    
+    if (svg) {
+      // Set all fill attributes to the new color
+      svg.querySelectorAll('*').forEach((element) => {
+        if (element.hasAttribute('fill') || element.tagName.toLowerCase() !== 'svg') {
+          element.setAttribute('fill', color)
+        }
+      })
+      
+      // Ensure the root SVG has the fill color
+      svg.setAttribute('fill', color)
+      
+      return new XMLSerializer().serializeToString(svg)
+    }
+    
+    return svgString
+  }
+
   // Calculate active traits with breakpoints
   const activeTraits = traits.map(trait => {
     const count = composition.units.filter(boardUnit => {
@@ -155,11 +199,14 @@ export default function CompositionBuilderModal({
       .filter(bp => count >= bp.num)
       .sort((a, b) => b.num - a.num)[0]
     
+    const traitColor = getTraitColor(trait, count)
+    
     return { 
       ...trait, 
       count, 
       activeBreakpoint: activeBreakpoint || null,
-      isActive: count > 0
+      isActive: count > 0,
+      colorInfo: traitColor
     }
   }).filter((trait): trait is NonNullable<typeof trait> => trait !== null)
   
@@ -721,30 +768,44 @@ export default function CompositionBuilderModal({
                   <div className="mb-6 bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                     <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Active Traits</h4>
                     <div className="flex flex-wrap gap-2">
-                      {activeTraits.map(trait => (
-                        <div 
-                          key={trait.id}
-                          className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-lg p-2 border dark:border-gray-600"
-                          style={{ 
-                            borderColor: trait.activeBreakpoint?.color || '#e5e7eb',
-                            backgroundColor: trait.activeBreakpoint ? `${trait.activeBreakpoint.color}10` : 'white'
-                          }}
-                        >
+                      {activeTraits.map(trait => {
+                        const borderColor = trait.colorInfo.hex
+                        // Convert hex to rgba for background transparency
+                        const hexToRgba = (hex: string, alpha: number) => {
+                          const r = parseInt(hex.slice(1, 3), 16)
+                          const g = parseInt(hex.slice(3, 5), 16)
+                          const b = parseInt(hex.slice(5, 7), 16)
+                          return `rgba(${r}, ${g}, ${b}, ${alpha})`
+                        }
+                        
+                        return (
                           <div 
-                            className="w-6 h-6 rounded flex items-center justify-center"
-                            dangerouslySetInnerHTML={{ __html: trait.image }}
-                          />
-                          <div className="text-sm">
-                            <span className="font-medium text-gray-900 dark:text-gray-100">{trait.name}</span>
-                            <span 
-                              className="ml-2 px-1.5 py-0.5 rounded text-xs font-bold text-white"
-                              style={{ backgroundColor: trait.activeBreakpoint?.color || '#6b7280' }}
-                            >
-                              {trait.count}
-                            </span>
+                            key={trait.id}
+                            className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-lg p-2 border-2 transition-all shadow-sm"
+                            style={{ 
+                              borderColor: borderColor,
+                              backgroundColor: hexToRgba(trait.colorInfo.hex, 0.1),
+                            }}
+                          >
+                            <div 
+                              className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0"
+                              dangerouslySetInnerHTML={{ __html: modifySvgColor(trait.image, trait.colorInfo.hex) }}
+                            />
+                            <div className="text-sm min-w-0">
+                              <span className="font-medium text-gray-900 dark:text-gray-100">{trait.name}</span>
+                              <span 
+                                className="ml-2 px-1.5 py-0.5 rounded text-xs font-bold"
+                                style={{ 
+                                  backgroundColor: trait.colorInfo.hex,
+                                  color: trait.colorInfo.hex === '#FFD700' || trait.colorInfo.hex === '#E6B85C' ? '#000000' : '#ffffff'
+                                }}
+                              >
+                                {trait.count}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 )}
