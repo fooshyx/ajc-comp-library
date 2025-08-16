@@ -22,6 +22,13 @@ interface CompositionData {
 
 export default function CompositionBuilder() {
   const { data: session } = useSession()
+
+  // Redirect non-authenticated users
+  useEffect(() => {
+    if (!session?.user?.id) {
+      window.location.href = '/'
+    }
+  }, [session])
   
   // Game data (cached for performance)
   const [units, setUnits] = useState<Unit[]>([])

@@ -239,11 +239,17 @@ export default function CompositionsList({ showPublicOnly = true, allowEdit = fa
                   {/* Main composition row */}
                   <div
                     className={`
-                      cursor-pointer transition-all duration-200 rounded-lg border-2 p-4
+                      ${session?.user?.id && (composition.userId === session.user.id || session.user.isAdmin) 
+                        ? 'cursor-pointer hover:shadow-lg hover:scale-[1.02]' 
+                        : 'cursor-default'
+                      } transition-all duration-200 rounded-lg border-2 p-4
                       bg-gradient-to-r ${getRatingColor(composition.rating)} ${getRatingBorderColor(composition.rating)}
-                      hover:shadow-lg hover:scale-[1.02]
                     `}
-                    onClick={() => handleEdit(composition)}
+                    onClick={() => {
+                      if (session?.user?.id && (composition.userId === session.user.id || session.user.isAdmin)) {
+                        handleEdit(composition)
+                      }
+                    }}
                   >
                     <div className="flex items-center space-x-4">
                       {/* Left: Name (Fixed width) */}

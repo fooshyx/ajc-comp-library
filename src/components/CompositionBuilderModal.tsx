@@ -35,6 +35,20 @@ export default function CompositionBuilderModal({
   onSave 
 }: CompositionBuilderModalProps) {
   const { data: session } = useSession()
+
+  // Security check: Don't allow editing if user doesn't own the composition
+  useEffect(() => {
+    if (isOpen && editComposition && session?.user?.id) {
+      const isOwner = editComposition.userId === session.user.id
+      const isAdmin = session.user.isAdmin
+      
+      if (!isOwner && !isAdmin) {
+        alert('You can only edit your own compositions')
+        onClose()
+        return
+      }
+    }
+  }, [isOpen, editComposition, session, onClose])
   
   // Game data (cached for performance)
   const [units, setUnits] = useState<Unit[]>([])

@@ -86,6 +86,15 @@ export async function POST(request: NextRequest) {
 // PUT - Update composition
 export async function PUT(request: NextRequest) {
   try {
+    // Check if user is authenticated
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
     const { id, name, description, units, isPublic } = body
 
@@ -93,6 +102,30 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         { error: 'Missing composition ID' },
         { status: 400 }
+      )
+    }
+
+    // Check ownership before updating
+    const existingComposition = await db
+      .select()
+      .from(compositions)
+      .where(eq(compositions.id, id))
+      .limit(1)
+
+    if (existingComposition.length === 0) {
+      return NextResponse.json(
+        { error: 'Composition not found' },
+        { status: 404 }
+      )
+    }
+
+    const isOwner = existingComposition[0].userId === session.user.id
+    const isAdmin = session.user.isAdmin
+
+    if (!isOwner && !isAdmin) {
+      return NextResponse.json(
+        { error: 'You can only edit your own compositions' },
+        { status: 403 }
       )
     }
 
