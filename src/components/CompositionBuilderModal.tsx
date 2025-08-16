@@ -335,18 +335,18 @@ export default function CompositionBuilderModal({
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-gray-900 rounded-lg max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               {editComposition ? 'Edit Composition' : 'Build Composition'}
             </h2>
-            <p className="text-gray-600 mt-1">Build and save your TFT team compositions</p>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">Build and save your TFT team compositions</p>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold"
           >
             ×
           </button>
@@ -355,27 +355,27 @@ export default function CompositionBuilderModal({
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {/* Composition Details */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <input
                 type="text"
                 placeholder="Composition Name"
                 value={composition.name}
                 onChange={(e) => setComposition(prev => ({ ...prev, name: e.target.value }))}
-                className="p-2 border border-gray-300 rounded-md"
+                className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
               <input
                 type="text"
                 placeholder="Description (optional)"
                 value={composition.description}
                 onChange={(e) => setComposition(prev => ({ ...prev, description: e.target.value }))}
-                className="p-2 border border-gray-300 rounded-md"
+                className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
               <div>
                 <select
                   value={composition.rating}
                   onChange={(e) => setComposition(prev => ({ ...prev, rating: e.target.value as 'S' | 'A' | 'B' | 'C' | '' }))}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="">Select Rating (Optional)</option>
                   <option value="S">S Tier - Meta</option>
