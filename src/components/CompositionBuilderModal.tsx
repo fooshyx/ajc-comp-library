@@ -335,7 +335,7 @@ export default function CompositionBuilderModal({
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div>
@@ -355,27 +355,27 @@ export default function CompositionBuilderModal({
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {/* Composition Details */}
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <input
                 type="text"
                 placeholder="Composition Name"
                 value={composition.name}
                 onChange={(e) => setComposition(prev => ({ ...prev, name: e.target.value }))}
-                className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                className="p-2 border border-gray-300 dark:border-gray-500 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <input
                 type="text"
                 placeholder="Description (optional)"
                 value={composition.description}
                 onChange={(e) => setComposition(prev => ({ ...prev, description: e.target.value }))}
-                className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                className="p-2 border border-gray-300 dark:border-gray-500 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <div>
                 <select
                   value={composition.rating}
                   onChange={(e) => setComposition(prev => ({ ...prev, rating: e.target.value as 'S' | 'A' | 'B' | 'C' | '' }))}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Rating (Optional)</option>
                   <option value="S">S Tier - Meta</option>
@@ -390,7 +390,7 @@ export default function CompositionBuilderModal({
             {composition.rating && (
               <div className="mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">Rating Preview:</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Rating Preview:</span>
                   <span className={`px-3 py-1 rounded-full text-sm font-bold ${getRatingColor(composition.rating)}`}>
                     {composition.rating} Tier
                   </span>
@@ -407,10 +407,10 @@ export default function CompositionBuilderModal({
                   onChange={(e) => setComposition(prev => ({ ...prev, isPublic: e.target.checked }))}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   Make this composition public
                 </span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   (Public compositions can be viewed by all users)
                 </span>
               </label>
@@ -447,15 +447,15 @@ export default function CompositionBuilderModal({
             {/* Left Panel - Game Data */}
             <div className="lg:col-span-1">
               {/* Tabs */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div className="border-b border-gray-200">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                <div className="border-b border-gray-200 dark:border-gray-700">
                   <nav className="-mb-px flex space-x-8 px-6">
                     <button
                       onClick={() => setActiveTab("units")}
                       className={`py-4 px-1 border-b-2 font-medium text-sm ${
                         activeTab === "units"
-                          ? "border-blue-500 text-blue-600"
-                          : "border-transparent text-gray-500 hover:text-gray-700"
+                          ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                          : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                       }`}
                     >
                       Units ({filteredUnits.length})
@@ -464,8 +464,8 @@ export default function CompositionBuilderModal({
                       onClick={() => setActiveTab("traits")}
                       className={`py-4 px-1 border-b-2 font-medium text-sm ${
                         activeTab === "traits"
-                          ? "border-blue-500 text-blue-600"
-                          : "border-transparent text-gray-500 hover:text-gray-700"
+                          ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                          : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                       }`}
                     >
                       Traits ({activeTraits.length})
@@ -474,8 +474,8 @@ export default function CompositionBuilderModal({
                       onClick={() => setActiveTab("items")}
                       className={`py-4 px-1 border-b-2 font-medium text-sm ${
                         activeTab === "items"
-                          ? "border-blue-500 text-blue-600"
-                          : "border-transparent text-gray-500 hover:text-gray-700"
+                          ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                          : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                       }`}
                     >
                       Items ({items.length})
@@ -493,12 +493,12 @@ export default function CompositionBuilderModal({
                         placeholder="Search units..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                       
                       {/* Cost Filter */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Cost Filter</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Cost Filter</label>
                         <div className="flex flex-wrap gap-2">
                           {[1, 2, 3, 4, 5].map(cost => (
                             <label key={cost} className="flex items-center">
@@ -514,7 +514,7 @@ export default function CompositionBuilderModal({
                                 }}
                                 className="mr-1"
                               />
-                              <span className="text-sm">{cost} cost</span>
+                              <span className="text-sm text-gray-700 dark:text-gray-200">{cost} cost</span>
                             </label>
                           ))}
                         </div>
@@ -522,8 +522,8 @@ export default function CompositionBuilderModal({
                       
                       {/* Selected Square Info */}
                       {selectedPosition !== null && !board[selectedPosition] && (
-                        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                          <p className="text-sm text-blue-800 font-medium">
+                        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md">
+                          <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
                             Position {selectedPosition + 1} selected - Choose a unit to place
                           </p>
                         </div>
@@ -537,8 +537,8 @@ export default function CompositionBuilderModal({
                             className={`
                               flex items-center p-2 rounded-md cursor-pointer transition-colors
                               ${selectedPosition !== null && !board[selectedPosition] 
-                                ? 'bg-blue-50 hover:bg-blue-100 border border-blue-200' 
-                                : 'bg-gray-50 hover:bg-gray-100'}
+                                ? 'bg-blue-50 hover:bg-blue-100 border border-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:border-blue-700' 
+                                : 'bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600'}
                             `}
                             onClick={() => handlePlaceUnit(unit)}
                           >
@@ -548,8 +548,8 @@ export default function CompositionBuilderModal({
                               className="w-8 h-8 rounded mr-3"
                             />
                             <div className="flex-1">
-                              <div className="font-medium text-sm">{unit.name}</div>
-                              <div className="text-xs text-gray-500">
+                              <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{unit.name}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
                                 Cost: {unit.cost} | {unit.traits.join(", ")}
                               </div>
                             </div>
@@ -558,8 +558,8 @@ export default function CompositionBuilderModal({
                       </div>
                       
                       {selectedPosition === null && (
-                        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                          <p className="text-sm text-yellow-800">
+                        <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md">
+                          <p className="text-sm text-yellow-800 dark:text-yellow-200">
                             Select an empty square on the board first, then choose a unit to place there.
                           </p>
                         </div>
@@ -571,14 +571,14 @@ export default function CompositionBuilderModal({
                   {activeTab === "traits" && (
                     <div className="space-y-2 max-h-80 overflow-y-auto">
                       {activeTraits.map(trait => (
-                        <div key={trait.id} className="flex items-center p-2 bg-gray-50 rounded-md">
+                        <div key={trait.id} className="flex items-center p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
                           <div
                             className="w-8 h-8 rounded mr-3 flex items-center justify-center"
                             dangerouslySetInnerHTML={{ __html: trait.image }}
                           />
                           <div className="flex-1">
-                            <div className="font-medium text-sm">{trait.name}</div>
-                            <div className="text-xs text-gray-500">
+                            <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{trait.name}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
                               Active: {trait.count} units
                             </div>
                           </div>
@@ -586,7 +586,7 @@ export default function CompositionBuilderModal({
                       ))}
                       
                       {activeTraits.length === 0 && (
-                        <div className="text-center text-gray-500 py-8">
+                        <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                           Place units on the board to see active traits
                         </div>
                       )}
@@ -598,7 +598,7 @@ export default function CompositionBuilderModal({
                     <div className="space-y-4">
                       {/* Selected Unit Info */}
                       {selectedPosition !== null && board[selectedPosition] && (
-                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md">
                           <div className="flex items-center">
                             <img
                               src={units.find(u => u.id === board[selectedPosition]?.unitId)?.image}
@@ -606,10 +606,10 @@ export default function CompositionBuilderModal({
                               className="w-6 h-6 rounded mr-2"
                             />
                             <div>
-                              <p className="text-sm text-green-800 font-medium">
+                              <p className="text-sm text-green-800 dark:text-green-200 font-medium">
                                 Managing items for {units.find(u => u.id === board[selectedPosition]?.unitId)?.name}
                               </p>
-                              <p className="text-xs text-green-600">
+                              <p className="text-xs text-green-600 dark:text-green-300">
                                 {board[selectedPosition]?.items.length || 0}/3 items equipped
                               </p>
                             </div>
@@ -618,14 +618,14 @@ export default function CompositionBuilderModal({
                           {/* Current Items */}
                           {board[selectedPosition]?.items.length > 0 && (
                             <div className="mt-3">
-                              <p className="text-xs font-medium text-green-700 mb-2">Current Items:</p>
+                              <p className="text-xs font-medium text-green-700 dark:text-green-300 mb-2">Current Items:</p>
                               <div className="flex flex-wrap gap-2">
                                 {board[selectedPosition]?.items.map((itemId, itemIndex) => {
                                   const item = items.find(i => i.id === itemId)
                                   return (
                                     <div
                                       key={itemIndex}
-                                      className="flex items-center bg-white rounded px-2 py-1 border border-green-200 cursor-pointer hover:bg-red-50"
+                                      className="flex items-center bg-white dark:bg-gray-800 rounded px-2 py-1 border border-green-200 dark:border-green-700 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20"
                                       onClick={() => handleRemoveItemFromUnit(itemIndex)}
                                     >
                                       <img
@@ -633,7 +633,7 @@ export default function CompositionBuilderModal({
                                         alt={item?.name}
                                         className="w-4 h-4 rounded mr-1"
                                       />
-                                      <span className="text-xs">{item?.name}</span>
+                                      <span className="text-xs text-gray-900 dark:text-gray-100">{item?.name}</span>
                                       <span className="ml-1 text-red-500 hover:text-red-700">×</span>
                                     </div>
                                   )
@@ -646,7 +646,7 @@ export default function CompositionBuilderModal({
                       
                       {/* Item Type Filter */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Filter by Type</label>
                         <div className="flex flex-wrap gap-2">
                           {(['all', 'standard', 'emblem', 'artifact', 'other'] as const).map(type => (
                             <button
@@ -654,8 +654,8 @@ export default function CompositionBuilderModal({
                               onClick={() => setItemSortType(type)}
                               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                                 itemSortType === type
-                                  ? 'bg-blue-500 text-white'
-                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                  ? 'bg-blue-500 text-white dark:bg-blue-600'
+                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'
                               }`}
                             >
                               {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -672,8 +672,8 @@ export default function CompositionBuilderModal({
                             className={`
                               flex items-center p-2 rounded-md cursor-pointer transition-colors
                               ${selectedPosition !== null && board[selectedPosition] && board[selectedPosition]?.items.length < 3
-                                ? 'bg-green-50 hover:bg-green-100 border border-green-200' 
-                                : 'bg-gray-50 hover:bg-gray-100'}
+                                ? 'bg-green-50 hover:bg-green-100 border border-green-200 dark:bg-green-900/20 dark:hover:bg-green-900/30 dark:border-green-700' 
+                                : 'bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600'}
                             `}
                             onClick={() => handleAddItemToUnit(item.id)}
                           >
@@ -683,24 +683,24 @@ export default function CompositionBuilderModal({
                               className="w-8 h-8 rounded mr-3"
                             />
                             <div className="flex-1">
-                              <div className="font-medium text-sm">{item.name}</div>
-                              <div className="text-xs text-gray-500 capitalize">{item.type}</div>
+                              <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{item.name}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">{item.type}</div>
                             </div>
                           </div>
                         ))}
                       </div>
                       
                       {selectedPosition === null && (
-                        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                          <p className="text-sm text-yellow-800">
+                        <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md">
+                          <p className="text-sm text-yellow-800 dark:text-yellow-200">
                             Select a unit on the board to manage its items.
                           </p>
                         </div>
                       )}
                       
                       {selectedPosition !== null && !board[selectedPosition] && (
-                        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                          <p className="text-sm text-yellow-800">
+                        <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md">
+                          <p className="text-sm text-yellow-800 dark:text-yellow-200">
                             The selected square is empty. Place a unit first to manage items.
                           </p>
                         </div>
@@ -713,18 +713,18 @@ export default function CompositionBuilderModal({
             
             {/* Right Panel - Board */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-medium mb-4">Team Board</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Team Board</h3>
                 
                 {/* Active Traits Display */}
                 {activeTraits.length > 0 && (
-                  <div className="mb-6 bg-gray-50 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">Active Traits</h4>
+                  <div className="mb-6 bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Active Traits</h4>
                     <div className="flex flex-wrap gap-2">
                       {activeTraits.map(trait => (
                         <div 
                           key={trait.id}
-                          className="flex items-center space-x-2 bg-white rounded-lg p-2 border"
+                          className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-lg p-2 border dark:border-gray-600"
                           style={{ 
                             borderColor: trait.activeBreakpoint?.color || '#e5e7eb',
                             backgroundColor: trait.activeBreakpoint ? `${trait.activeBreakpoint.color}10` : 'white'
@@ -735,7 +735,7 @@ export default function CompositionBuilderModal({
                             dangerouslySetInnerHTML={{ __html: trait.image }}
                           />
                           <div className="text-sm">
-                            <span className="font-medium">{trait.name}</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">{trait.name}</span>
                             <span 
                               className="ml-2 px-1.5 py-0.5 rounded text-xs font-bold text-white"
                               style={{ backgroundColor: trait.activeBreakpoint?.color || '#6b7280' }}
@@ -760,8 +760,8 @@ export default function CompositionBuilderModal({
                         key={index}
                         className={`
                           aspect-square border-2 rounded-lg flex flex-col items-center justify-center cursor-pointer relative
-                          ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
-                          ${unit ? 'bg-gray-100' : 'bg-gray-50'}
+                          ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400' : 'border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500'}
+                          ${unit ? 'bg-gray-100 dark:bg-gray-700' : 'bg-gray-50 dark:bg-gray-800'}
                         `}
                         onClick={() => handleSquareClick(index)}
                       >
@@ -783,7 +783,7 @@ export default function CompositionBuilderModal({
                               alt={unit.name}
                               className="w-8 h-8 rounded mb-1"
                             />
-                            <div className="text-xs text-center font-medium truncate w-full px-1">{unit.name}</div>
+                            <div className="text-xs text-center font-medium truncate w-full px-1 text-gray-900 dark:text-gray-100">{unit.name}</div>
                             
                             {/* Items display */}
                             {boardUnit.items.length > 0 && (
@@ -803,7 +803,7 @@ export default function CompositionBuilderModal({
                             )}
                           </>
                         ) : (
-                          <div className="text-xs text-gray-400 text-center">
+                          <div className="text-xs text-gray-400 dark:text-gray-500 text-center">
                             {index + 1}
                           </div>
                         )}
@@ -813,7 +813,7 @@ export default function CompositionBuilderModal({
                 </div>
                 
                 {/* Instructions */}
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   <p><strong>Workflow:</strong></p>
                   <ul className="list-disc list-inside mt-1 space-y-1">
                     <li><strong>Step 1:</strong> Click an empty square on the board to select it</li>
@@ -825,8 +825,8 @@ export default function CompositionBuilderModal({
                 </div>
                 
                 {selectedPosition !== null && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-md">
-                    <p className="text-sm text-blue-800">
+                  <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
                       {board[selectedPosition] 
                         ? `Managing position ${selectedPosition + 1} - Switch to Items tab to equip items`
                         : `Position ${selectedPosition + 1} selected - Switch to Units tab to place a unit`
