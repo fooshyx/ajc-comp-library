@@ -47,16 +47,28 @@ export const getTraitSortOrder = (color?: string): number => {
   }
 }
 
-export const sortTraitsByBreakpoint = <T extends { name: string; color?: string }>(traits: T[]): T[] => {
-  return traits.sort((a, b) => {
-    const orderA = getTraitSortOrder(a.color)
-    const orderB = getTraitSortOrder(b.color)
+export const sortTraitsByBreakpoint = <T extends { name: string; color?: string | null | undefined }>(traits: T[]): T[] => {
+  // Create a copy to avoid mutating the original array
+  const traitsCopy = [...traits]
+  
+  return traitsCopy.sort((a, b) => {
+    // Get the sort order for each trait's breakpoint color
+    const colorA = a.color || null
+    const colorB = b.color || null
+    const orderA = getTraitSortOrder(colorA || undefined)
+    const orderB = getTraitSortOrder(colorB || undefined)
     
+    // Debug: Log the comparison for testing
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Sorting: ${a.name} (${colorA}, order: ${orderA}) vs ${b.name} (${colorB}, order: ${orderB})`)
+    }
+    
+    // Primary sort: by breakpoint tier (Light Bronze=1 -> Platinum=2 -> Gold=3 -> Silver=4 -> Bronze=5 -> NULL=6)
     if (orderA !== orderB) {
       return orderA - orderB
     }
     
-    // If same order (same breakpoint level), sort alphabetically by name
+    // Secondary sort: alphabetically within the same tier
     return a.name.localeCompare(b.name)
   })
 }
