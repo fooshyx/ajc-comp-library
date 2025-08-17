@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react"
 import { hybridStorage } from "@/lib/hybridStorage"
 import { Unit, Trait, Component, Item } from "@/types/tft"
 import { Composition } from "@/db/schema"
-import { getBreakpointColorHex } from "@/lib/traitColors"
+import { getBreakpointColorHex, sortTraitsByBreakpoint } from "@/lib/traitColors"
 
 interface BoardUnit {
   unitId: string
@@ -233,9 +233,13 @@ export default function CompositionBuilderModal({
       count, 
       activeBreakpoint: activeBreakpoint || null,
       isActive: count > 0,
-      styling
+      styling,
+      color: activeBreakpoint?.color
     }
   }).filter((trait): trait is NonNullable<typeof trait> => trait !== null)
+  
+  // Sort traits according to the custom order: Light Bronze -> Platinum -> Gold -> Silver -> Bronze -> NULL, then alphabetical
+  const sortedActiveTraits = sortTraitsByBreakpoint(activeTraits)
   
   // Filter items based on selected type
   const filteredItems = itemSortType === 'all' 
@@ -542,7 +546,7 @@ export default function CompositionBuilderModal({
                           : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                       }`}
                     >
-                      Traits ({activeTraits.length})
+                      Traits ({sortedActiveTraits.length})
                     </button>
                     <button
                       onClick={() => setActiveTab("items")}
@@ -644,7 +648,7 @@ export default function CompositionBuilderModal({
                   {/* Traits Tab */}
                   {activeTab === "traits" && (
                     <div className="space-y-2 max-h-80 overflow-y-auto">
-                      {activeTraits.map(trait => (
+                      {sortedActiveTraits.map(trait => (
                         <div key={trait.id} className="flex items-center p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
                           <div
                             className="w-8 h-8 rounded mr-3 flex items-center justify-center"
@@ -659,7 +663,7 @@ export default function CompositionBuilderModal({
                         </div>
                       ))}
                       
-                      {activeTraits.length === 0 && (
+                      {sortedActiveTraits.length === 0 && (
                         <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                           Place units on the board to see active traits
                         </div>
@@ -791,11 +795,11 @@ export default function CompositionBuilderModal({
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Team Board</h3>
                 
                 {/* Active Traits Display */}
-                {activeTraits.length > 0 && (
+                {sortedActiveTraits.length > 0 && (
                   <div className="mb-6 bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                     <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Active Traits</h4>
                     <div className="flex flex-wrap gap-2">
-                      {activeTraits.map(trait => (
+                      {sortedActiveTraits.map(trait => (
                         <div 
                           key={trait.id}
                           className={`flex items-center space-x-2 rounded-lg p-2 border-2 transition-all shadow-sm ${trait.styling.bgClass} ${trait.styling.borderClass}`}

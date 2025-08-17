@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import { hybridStorage } from "@/lib/hybridStorage"
 import { Composition } from "@/db/schema"
 import { Unit, Trait, Item } from "@/types/tft"
+import { sortTraitsByBreakpoint } from "@/lib/traitColors"
 import CompositionBuilderModal from "./CompositionBuilderModal"
 
 interface CompositionWithDetails extends Composition {
@@ -119,6 +120,9 @@ export default function CompositionsList({ showPublicOnly = true, allowEdit = fa
       }
     }).filter(trait => trait.count > 0)
 
+    // Sort traits according to the custom order: Light Bronze -> Platinum -> Gold -> Silver -> Bronze -> NULL, then alphabetical
+    const sortedActiveTraits = sortTraitsByBreakpoint(activeTraits)
+
     // Get unique items from all units
     const itemIds = new Set<string>()
     composition.units.forEach(boardUnit => {
@@ -128,7 +132,7 @@ export default function CompositionsList({ showPublicOnly = true, allowEdit = fa
 
     return {
       units: compositionUnits,
-      traits: activeTraits,
+      traits: sortedActiveTraits,
       items: compositionItems
     }
   }
