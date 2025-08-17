@@ -142,9 +142,14 @@ export default function CompositionBuilderModal({
     return matchesCost && matchesSearch
   })
   
-  // Helper function to get trait color based on count and breakpoints
-  const getTraitColor = (trait: Trait, count: number) => {
-    if (count === 0) return { hex: '#6b7280', name: 'Inactive' } // gray for inactive
+  // Helper function to get trait styling based on count and breakpoints
+  const getTraitStyling = (trait: Trait, count: number) => {
+    if (count === 0) return { 
+      bgClass: 'bg-gray-100 dark:bg-gray-700', 
+      borderClass: 'border-gray-300 dark:border-gray-600',
+      badgeClass: 'bg-gray-500 text-white',
+      name: 'Inactive' 
+    }
     
     // Find the highest active breakpoint
     const activeBreakpoint = trait.breakpoints
@@ -152,37 +157,59 @@ export default function CompositionBuilderModal({
       .sort((a, b) => b.num - a.num)[0]
     
     if (activeBreakpoint) {
-      return { hex: getBreakpointColorHex(activeBreakpoint.color), name: activeBreakpoint.color }
+      switch (activeBreakpoint.color) {
+        case 'bronze':
+          return {
+            bgClass: 'bg-orange-100 dark:bg-orange-900/30',
+            borderClass: 'border-orange-400 dark:border-orange-500',
+            badgeClass: 'bg-orange-600 text-white',
+            name: 'Bronze'
+          }
+        case 'light-bronze':
+          return {
+            bgClass: 'bg-yellow-100 dark:bg-yellow-900/30',
+            borderClass: 'border-yellow-400 dark:border-yellow-500',
+            badgeClass: 'bg-yellow-600 text-white',
+            name: 'Light Bronze'
+          }
+        case 'silver':
+          return {
+            bgClass: 'bg-gray-200 dark:bg-gray-600/50',
+            borderClass: 'border-gray-400 dark:border-gray-300',
+            badgeClass: 'bg-gray-600 text-white',
+            name: 'Silver'
+          }
+        case 'gold':
+          return {
+            bgClass: 'bg-yellow-200 dark:bg-yellow-800/40',
+            borderClass: 'border-yellow-500 dark:border-yellow-400',
+            badgeClass: 'bg-yellow-500 text-black',
+            name: 'Gold'
+          }
+        case 'platinum':
+          return {
+            bgClass: 'bg-purple-100 dark:bg-purple-900/30',
+            borderClass: 'border-purple-400 dark:border-purple-500',
+            badgeClass: 'bg-purple-600 text-white',
+            name: 'Platinum'
+          }
+        default:
+          return {
+            bgClass: 'bg-blue-100 dark:bg-blue-900/30',
+            borderClass: 'border-blue-400 dark:border-blue-500',
+            badgeClass: 'bg-blue-600 text-white',
+            name: activeBreakpoint.color
+          }
+      }
     }
     
-    // If count > 0 but no breakpoint reached, use black/dark color
-    return { hex: '#1f2937', name: 'Active' } // dark gray for active but no breakpoint
-  }
-
-  // Helper function to modify SVG fill color
-  const modifySvgColor = (svgString: string, color: string) => {
-    if (!svgString) return svgString
-    
-    // Parse the SVG and modify fill colors
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(svgString, 'image/svg+xml')
-    const svg = doc.querySelector('svg')
-    
-    if (svg) {
-      // Set all fill attributes to the new color
-      svg.querySelectorAll('*').forEach((element) => {
-        if (element.hasAttribute('fill') || element.tagName.toLowerCase() !== 'svg') {
-          element.setAttribute('fill', color)
-        }
-      })
-      
-      // Ensure the root SVG has the fill color
-      svg.setAttribute('fill', color)
-      
-      return new XMLSerializer().serializeToString(svg)
+    // If count > 0 but no breakpoint reached, use neutral active styling
+    return {
+      bgClass: 'bg-slate-100 dark:bg-slate-700/50',
+      borderClass: 'border-slate-400 dark:border-slate-500',
+      badgeClass: 'bg-slate-600 text-white',
+      name: 'Active'
     }
-    
-    return svgString
   }
 
   // Calculate active traits with breakpoints
@@ -199,14 +226,14 @@ export default function CompositionBuilderModal({
       .filter(bp => count >= bp.num)
       .sort((a, b) => b.num - a.num)[0]
     
-    const traitColor = getTraitColor(trait, count)
+    const styling = getTraitStyling(trait, count)
     
     return { 
       ...trait, 
       count, 
       activeBreakpoint: activeBreakpoint || null,
       isActive: count > 0,
-      colorInfo: traitColor
+      styling
     }
   }).filter((trait): trait is NonNullable<typeof trait> => trait !== null)
   
@@ -768,44 +795,23 @@ export default function CompositionBuilderModal({
                   <div className="mb-6 bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                     <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Active Traits</h4>
                     <div className="flex flex-wrap gap-2">
-                      {activeTraits.map(trait => {
-                        const borderColor = trait.colorInfo.hex
-                        // Convert hex to rgba for background transparency
-                        const hexToRgba = (hex: string, alpha: number) => {
-                          const r = parseInt(hex.slice(1, 3), 16)
-                          const g = parseInt(hex.slice(3, 5), 16)
-                          const b = parseInt(hex.slice(5, 7), 16)
-                          return `rgba(${r}, ${g}, ${b}, ${alpha})`
-                        }
-                        
-                        return (
+                      {activeTraits.map(trait => (
+                        <div 
+                          key={trait.id}
+                          className={`flex items-center space-x-2 rounded-lg p-2 border-2 transition-all shadow-sm ${trait.styling.bgClass} ${trait.styling.borderClass}`}
+                        >
                           <div 
-                            key={trait.id}
-                            className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-lg p-2 border-2 transition-all shadow-sm"
-                            style={{ 
-                              borderColor: borderColor,
-                              backgroundColor: hexToRgba(trait.colorInfo.hex, 0.1),
-                            }}
-                          >
-                            <div 
-                              className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0"
-                              dangerouslySetInnerHTML={{ __html: modifySvgColor(trait.image, trait.colorInfo.hex) }}
-                            />
-                            <div className="text-sm min-w-0">
-                              <span className="font-medium text-gray-900 dark:text-gray-100">{trait.name}</span>
-                              <span 
-                                className="ml-2 px-1.5 py-0.5 rounded text-xs font-bold"
-                                style={{ 
-                                  backgroundColor: trait.colorInfo.hex,
-                                  color: trait.colorInfo.hex === '#FFD700' || trait.colorInfo.hex === '#E6B85C' ? '#000000' : '#ffffff'
-                                }}
-                              >
-                                {trait.count}
-                              </span>
-                            </div>
+                            className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0"
+                            dangerouslySetInnerHTML={{ __html: trait.image }}
+                          />
+                          <div className="text-sm min-w-0">
+                            <span className="font-medium text-gray-900 dark:text-gray-100">{trait.name}</span>
+                            <span className={`ml-2 px-1.5 py-0.5 rounded text-xs font-bold ${trait.styling.badgeClass}`}>
+                              {trait.count}
+                            </span>
                           </div>
-                        )
-                      })}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

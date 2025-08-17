@@ -1,20 +1,20 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/change-password/route": "app/api/change-password/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
   "/api/components/route": "app/api/components/route.js",
-  "/api/change-password/route": "app/api/change-password/route.js",
   "/api/compositions/route": "app/api/compositions/route.js",
-  "/api/init-db/route": "app/api/init-db/route.js",
   "/api/init-admin/route": "app/api/init-admin/route.js",
-  "/api/migrate/route": "app/api/migrate/route.js",
+  "/api/init-db/route": "app/api/init-db/route.js",
   "/api/items/route": "app/api/items/route.js",
   "/api/traits/route": "app/api/traits/route.js",
+  "/api/migrate/route": "app/api/migrate/route.js",
   "/api/units/route": "app/api/units/route.js",
   "/api/users/change-password/route": "app/api/users/change-password/route.js",
   "/api/users/route": "app/api/users/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
   "/admin/page": "app/admin/page.js",
+  "/page": "app/page.js",
   "/auth/signin/page": "app/auth/signin/page.js",
   "/builder/page": "app/builder/page.js",
-  "/settings/page": "app/settings/page.js",
-  "/page": "app/page.js"
+  "/settings/page": "app/settings/page.js"
 }

@@ -1,20 +1,20 @@
 {
+  "/_not-found/page": "/_not-found",
+  "/api/change-password/route": "/api/change-password",
   "/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",
   "/api/components/route": "/api/components",
-  "/api/change-password/route": "/api/change-password",
   "/api/compositions/route": "/api/compositions",
-  "/api/init-db/route": "/api/init-db",
   "/api/init-admin/route": "/api/init-admin",
-  "/api/migrate/route": "/api/migrate",
+  "/api/init-db/route": "/api/init-db",
   "/api/items/route": "/api/items",
   "/api/traits/route": "/api/traits",
+  "/api/migrate/route": "/api/migrate",
   "/api/units/route": "/api/units",
   "/api/users/change-password/route": "/api/users/change-password",
   "/api/users/route": "/api/users",
-  "/_not-found/page": "/_not-found",
   "/admin/page": "/admin",
+  "/page": "/",
   "/auth/signin/page": "/auth/signin",
   "/builder/page": "/builder",
-  "/settings/page": "/settings",
-  "/page": "/"
+  "/settings/page": "/settings"
 }
